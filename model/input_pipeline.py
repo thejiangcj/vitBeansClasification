@@ -21,7 +21,6 @@ import tensorflow_datasets as tfds
 
 import sys
 if sys.platform != 'darwin':
-  # A workaround to avoid crash because tfds may open to many files.
   import resource
   low, high = resource.getrlimit(resource.RLIMIT_NOFILE)
   resource.setrlimit(resource.RLIMIT_NOFILE, (high, high))
@@ -30,27 +29,6 @@ if sys.platform != 'darwin':
 MAX_IN_MEMORY = 200_000
 
 DATASET_PRESETS = {
-    'cifar10': {
-        'train': 'train[:98%]',
-        'test': 'test',
-        'resize': 512,
-        'crop': 384,
-        'total_steps': 10_000,
-    },
-    'cifar100': {
-        'train': 'train[:98%]',
-        'test': 'test',
-        'resize': 512,
-        'crop': 384,
-        'total_steps': 10_000,
-    },
-    'imagenet2012': {
-        'train': 'train[:99%]',
-        'test': 'validation',
-        'resize': 512,
-        'crop': 384,
-        'total_steps': 20_000,
-    },
     'food101': {
         'train': 'train[:98%]',
         'test': 'validation',
@@ -88,26 +66,6 @@ def get_data(*,
              tfds_data_dir=None,
              tfds_manual_dir=None,
              inception_crop=True):
-  """Returns dataset for training/eval.
-
-  Args:
-    dataset: Dataset name. Additionally to the requirement that this dataset
-      must be in tensorflow_datasets, the dataset must be registered in
-      `DATASET_PRESETS` (specifying crop size etc).
-    mode: Must be "train" or "test".
-    repeats: How many times the dataset should be repeated. For indefinite
-      repeats specify None.
-    batch_size: Global batch size. Note that the returned dataset will have
-      dimensions [local_devices, batch_size / local_devices, ...].
-    mixup_alpha: Coefficient for mixup combination. See 
-      https://arxiv.org/abs/1710.09412
-    shuffle_buffer: Number of elements to preload the shuffle buffer with.
-    tfds_data_dir: Optional directory where tfds datasets are stored. If not
-      specified, datasets are downloaded and in the default tfds data_dir on the
-      local machine.
-    inception_crop: If set to True, tf.image.sample_distorted_bounding_box()
-      will be used. If set to False, tf.image.random_crop() will be used.
-  """
 
   preset = DATASET_PRESETS.get(dataset)
   if preset is None:
@@ -189,7 +147,6 @@ def get_data(*,
 
 
 def prefetch(dataset, n_prefetch):
-  """Prefetches data to device and converts to numpy array."""
   ds_iter = iter(dataset)
   ds_iter = map(lambda x: jax.tree_map(lambda t: np.asarray(memoryview(t)), x),
                 ds_iter)
