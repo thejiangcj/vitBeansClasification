@@ -16,13 +16,13 @@ import flax.jax_utils as flax_utils
 
 import tensorflow as tf
 
-from vit_jax import checkpoint
-from vit_jax import flags
-from vit_jax import hyper
-from vit_jax import logging
-from vit_jax import input_pipeline
-from vit_jax import models
-from vit_jax import momentum_clip
+from vitBeans import checkpoint
+from vitBeans import flags
+from vitBeans import hyper
+from vitBeans import logging
+from vitBeans import input_pipeline
+from vitBeans import models
+from vitBeans import momentum_clip
 
 
 def make_update_fn(vit_fn, accum_steps):

@@ -17,8 +17,8 @@ import jax.numpy as jnp
 
 import flax.nn as nn
 
-from vit_jax import configs
-from vit_jax import models_resnet
+from vitBeans import configs
+from vitBeans import models_resnet
 
 
 class IdentityLayer(nn.Module):
