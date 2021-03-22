@@ -19,7 +19,7 @@ import tensorflow as tf
 from vitBeans import checkpoint
 from vitBeans import flags
 from vitBeans import hyper
-from vitBeans import logging
+from vitBeans import loging
 from vitBeans import input_pipeline
 from vitBeans import models
 from vitBeans import momentum_clip
@@ -59,7 +59,7 @@ def make_update_fn(vit_fn, accum_steps):
 
 def main(args):
   logdir = os.path.join(args.logdir, args.name)
-  logger = logging.setup_logger(logdir)
+  logger = loging.setup_logger(logdir)
   logger.info(args)
 
   logger.info(f'Available devices: {jax.devices()}')
