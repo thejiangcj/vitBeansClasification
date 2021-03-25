@@ -86,6 +86,14 @@ def main(args):
       tfds_data_dir=args.tfds_data_dir,
       tfds_manual_dir=args.tfds_manual_dir)
   logger.info(ds_test)
+  ds_val = input_pipeline.get_data(
+      dataset=args.dataset,
+      mode='val',
+      repeats=1,
+      batch_size=args.batch_eval,
+      tfds_data_dir=args.tfds_data_dir,
+      tfds_manual_dir=args.tfds_manual_dir)
+  logger.info(ds_val)
 
   # Build VisionTransformer architecture
   model = models.KNOWN_MODELS[args.model]
@@ -170,11 +178,19 @@ def main(args):
                         axis=2) == np.argmax(batch['label'], axis=2)).ravel()
       ])
 
+      accuracy_val = np.mean([
+          c for batch in input_pipeline.prefetch(ds_val, args.prefetch)
+          for c in (
+              np.argmax(vit_fn_repl(opt_repl.target, batch['image']),
+                        axis=2) == np.argmax(batch['label'], axis=2)).ravel()
+      ])
+
       lr = float(lr_repl[0])
       logger.info(f'Step: {step} '
                   f'Learning rate: {lr:.7f}, '
+                  f'val accuracy: {accuracy_val:0.5f},'
                   f'Test accuracy: {accuracy_test:0.5f}')
-      writer.write_scalars(step, dict(accuracy_test=accuracy_test, lr=lr))
+      writer.write_scalars(step, dict(accuracy_val=accuracy_val, accuracy_test=accuracy_test, lr=lr))
       copyfiles(glob.glob(f'{logdir}/*'))
 
   if args.output:

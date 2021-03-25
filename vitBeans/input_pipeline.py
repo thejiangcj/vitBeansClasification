@@ -38,7 +38,8 @@ DATASET_PRESETS = {
     },
     'Beans': {
         'train': 'train[:98%]',
-        'test': 'validation',
+        'val': 'validation',
+        'test': 'test',
         'resize': 512,
         'crop': 384,
         'total_steps': 10_000,
@@ -100,6 +101,10 @@ def get_data(*,
         # need to restore it the manual way.
         im.set_shape([None, None, channels])
         im = tf.image.resize(im, [crop_size, crop_size])
+        im = tf.image.random_flip_left_right(im)
+        im = tf.image.random_flip_up_down(im)
+        im = tf.image.random_brightness(im, 0.5)
+        im = tf.image.random_contrast(im,0,1)
       else:
         im = tf.image.resize(im, [resize_size, resize_size])
         im = tf.image.random_crop(im, [crop_size, crop_size, 3])
