@@ -3,11 +3,11 @@ vit 在数据集 Beans 豆类植物病害分类应用
 
 数据集地址：[Beans](https://github.com/AI-Lab-Makerere/ibean/)
 
-code reference: [vision_transformer](https://github.com/google-research/vision_transformer) 
+code refer and fork from: [vision_transformer](https://github.com/google-research/vision_transformer) 
 
 ## Introduction
 
-> 代码参考 paper: [An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale](https://arxiv.org/abs/2010.11929)
+> 参考 paper: [An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale](https://arxiv.org/abs/2010.11929)
 
 
 
@@ -15,11 +15,15 @@ code reference: [vision_transformer](https://github.com/google-research/vision_t
 
 ### Way 1: Jupyter Notebook in Colab
 
-You can run [vitBeans.ipynb](vitBeans.ipynb)
+You can run in [Colab Link](https://colab.research.google.com/drive/1UaGJryx8gJAgLICg_N5tCHVVcII6-atH?usp=sharing)
 
-### Way 2: Python Script
+### Way 2: Python Script(Recommendation)
 
+Refer to the above Colab link's [Step 4](https://colab.research.google.com/drive/1UaGJryx8gJAgLICg_N5tCHVVcII6-atH?usp=sharing#scrollTo=YcQn0Cxketnr)
 
+1. Run Step1 - Link to your Google Colab Drive and Install Python res ([Jax](https://github.com/google/jax) and the like)
+2. Run Step2.1 - Download VIT model for transfering learning
+3. Run Step4 - Training model
 
 ## Cite
 

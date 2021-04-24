@@ -27,13 +27,8 @@ from vitBeans import momentum_clip
 
 def make_update_fn(vit_fn, accum_steps):
 
-  # Update step, replicated over all TPUs/GPUs
   @functools.partial(jax.pmap, axis_name='batch', donate_argnums=(0,))
   def update_fn(opt, lr, batch, update_rng):
-
-    # Bind the rng key to the device id (which is unique across hosts)
-    # Note: This is only used for multi-host training (i.e. multiple computers
-    # each with multiple accelerators).
     update_rng = jax.random.fold_in(update_rng, jax.lax.axis_index('batch'))
     update_rng, new_update_rng = jax.random.split(update_rng)
 
@@ -64,7 +59,7 @@ def main(args):
 
   logger.info(f'Available devices: {jax.devices()}')
 
-  # Setup input pipeline
+  #数据导入
   dataset_info = input_pipeline.get_dataset_info(args.dataset, 'train')
 
   ds_train = input_pipeline.get_data(
@@ -95,12 +90,12 @@ def main(args):
       tfds_manual_dir=args.tfds_manual_dir)
   logger.info(ds_val)
 
-  # Build VisionTransformer architecture
+  # 实例化网络架构
   model = models.KNOWN_MODELS[args.model]
   VisionTransformer = model.partial(num_classes=dataset_info['num_classes'])
   _, params = VisionTransformer.init_by_shape(
       jax.random.PRNGKey(0),
-      # Discard the "num_local_devices" dimension for initialization.
+
       [(batch['image'].shape[1:], batch['image'].dtype.name)])
 
   pretrained_path = os.path.join(args.vit_pretrained_dir, f'{args.model}.npz')
@@ -110,21 +105,18 @@ def main(args):
       model_config=models.CONFIGS[args.model],
       logger=logger)
 
-  # pmap replicates the models over all TPUs/GPUs
   vit_fn_repl = jax.pmap(VisionTransformer.call)
   update_fn_repl = make_update_fn(VisionTransformer.call, args.accum_steps)
 
-  # Create optimizer and replicate it over all TPUs/GPUs
   opt = momentum_clip.Optimizer(
       dtype=args.optim_dtype, grad_norm_clip=args.grad_norm_clip).create(params)
   opt_repl = flax_utils.replicate(opt)
 
-  # Delete referenes to the objects that are not needed anymore
   del opt
   del params
 
   def copyfiles(paths):
-    """Small helper to copy files to args.copy_to using tf.io.gfile."""
+    
     if not args.copy_to:
       return
     for path in paths:
@@ -136,7 +128,6 @@ def main(args):
   total_steps = args.total_steps or (
       input_pipeline.DATASET_PRESETS[args.dataset]['total_steps'])
 
-  # Prepare the learning-rate and pre-fetch it to device to avoid delays.
   lr_fn = hyper.create_learning_rate_schedule(total_steps, args.base_lr,
                                               args.decay_type,
                                               args.warmup_steps)
@@ -144,7 +135,6 @@ def main(args):
   update_rngs = jax.random.split(
       jax.random.PRNGKey(0), jax.local_device_count())
 
-  # Run training loop
   writer = metric_writers.create_default_writer(logdir, asynchronous=False)
   writer.write_hparams({k: v for k, v in vars(args).items() if v is not None})
   logger.info('Starting training loop; initial compile can take a while...')
@@ -167,7 +157,7 @@ def main(args):
                   f'ETA: {(time.time()-t0)/done*(1-done)/3600:.2f}h')
       copyfiles(glob.glob(f'{logdir}/*'))
 
-    # Run eval step
+    # 评估，计算准确率
     if ((args.eval_every and step % args.eval_every == 0) or
         (step == total_steps)):
 

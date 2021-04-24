@@ -99,7 +99,7 @@ def argparser(known_models, known_datasets):
   parser.add_argument(
       '--base_lr',
       type=float,
-      default=0.03,
+      default=0.05,
       help='Base learning-rate for fine-tuning. Most likely default is best.')
   parser.add_argument(
       '--decay_type',
